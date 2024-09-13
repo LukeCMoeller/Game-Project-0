@@ -141,12 +141,10 @@ namespace Game_Project_0
             }
             else
             {
-                string time = "time: " + difficulty.ToString();
 
                 _spriteBatch.Begin();
             ship.Draw(gameTime, _spriteBatch);
             _spriteBatch.DrawString(_font, $"{gameTime.TotalGameTime:c}", new Vector2(2, 2), Color.Red);
-                _spriteBatch.DrawString(_font, time, printMiddle(time, 50, 1f), Color.Red);
                 foreach (var ash in _asteroid)
                 {
                     ash.Draw(gameTime, _spriteBatch);
