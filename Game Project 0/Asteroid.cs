@@ -46,8 +46,8 @@ namespace Game_Project_0
         /// <param name="gameTime">The GameTime</param>
         public void Update(GameTime gameTime)
         {
-            //_position.Y += 3;
-            //bounds.Center = _position;
+            _position.Y += 3;
+            bounds.Center = _position;
         }
 
         /// <summary>
@@ -57,7 +57,7 @@ namespace Game_Project_0
         /// <param name="spriteBatch">The spritebatch to render with</param>
         public void Draw(GameTime gameTime, SpriteBatch spriteBatch)
         {
-            if(_position.X > 850)
+            if(_position.Y >850)
             {
                 return;
             }
