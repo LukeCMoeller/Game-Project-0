@@ -5,36 +5,67 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using SharpDX.Direct2D1.Effects;
 using System.Collections.Generic;
-
-
+using Microsoft.Xna.Framework.Media;
+using GameArchitectureExample.Screens;
+using GameArchitectureExample.StateManagement;
+using GameArchitectureExample;
+using System.Threading;
 
 namespace Game_Project_0
 {
     public class Game1 : Game
     {
+        private GraphicsDeviceManager _graphics;
+        private readonly ScreenManager _screenManager;
+        
+
         private float difficulty = 3;
         private float astroidtimer;
         private bool gamemove = false;
         private Random random = new Random();
-        private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
         private SpriteFont _font;
         private Ship ship;
         private List<Asteroid> _asteroid = new List<Asteroid>();
         private Star[] stars;
-        private double Score;
+        private TimeSpan Score;
         private bool gameStart = false;
+
+        BackgroundScreen b = new BackgroundScreen();
+        MainMenuScreen m = new MainMenuScreen();
+
+        private VideoPlayer _videoPlayer;
+
+        private Song background;
+
+        private Video death;
         public Game1()
         {
             _graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
-        }
 
+            var screenFactory = new ScreenFactory();
+            Services.AddService(typeof(IScreenFactory), screenFactory);
+
+            _screenManager = new ScreenManager(this);
+            Components.Add(_screenManager);
+
+            AddInitialScreens();
+        }
+        private void AddInitialScreens()
+        {
+            _screenManager.AddScreen(b, null);
+            _screenManager.AddScreen(m, null);
+        }
         protected override void Initialize()
         {
+            _videoPlayer = new VideoPlayer();
+            _videoPlayer.Volume = 0.3f;
             // TODO: Add your initialization logic here
-            
+            background = Content.Load<Song>("TechnoJams");
+            death = Content.Load<Video>("Explosion");
+            MediaPlayer.Volume = 0.3f;
             _graphics.PreferredBackBufferWidth = 500;
             _graphics.PreferredBackBufferHeight = 800;
             _graphics.ApplyChanges();
@@ -46,6 +77,7 @@ namespace Game_Project_0
                 stars[i] = new Star(new Vector2(random.Next(30, 470), random.Next(30, 770)));
             }
             base.Initialize();
+            
         }
 
         protected override void LoadContent()
@@ -65,10 +97,22 @@ namespace Game_Project_0
 
         protected override void Update(GameTime gameTime)
         {
+            if (Keyboard.GetState().IsKeyDown(Keys.Enter))
+            {
+                gameStart = true;
+                _screenManager.RemoveScreen(b);
+                _screenManager.RemoveScreen(m);
+            }
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
-            if (gameStart == true)
+            if (gameStart == true )
             {
+                if(MediaPlayer.State != MediaState.Playing && gamemove == false)
+                {
+                    MediaPlayer.Play(background);
+                }
+              
+                
                 astroidtimer += (float)gameTime.ElapsedGameTime.TotalSeconds;
                 if (astroidtimer > difficulty)
                 {
@@ -90,12 +134,14 @@ namespace Game_Project_0
                     {
                         ship.color = Color.Red;
                         gamemove = true;
+                        _videoPlayer.Play(death);
+                        MediaPlayer.Stop();
                     }
                     ash.Update(gameTime);
                 }
                 if (!gamemove)
                 {
-                    Score += gameTime.ElapsedGameTime.TotalSeconds;
+                    Score += gameTime.ElapsedGameTime;
                 }
                 // TODO: Add your update logic here
 
@@ -103,22 +149,20 @@ namespace Game_Project_0
             }
             else
             {
-                if(Keyboard.GetState().IsKeyDown(Keys.Left) || Keyboard.GetState().IsKeyDown(Keys.Right)){
-                    gameStart = true;
-                }
+                base.Update(gameTime);
             }
         }
 
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Color.MediumPurple);
+           
             if (gamemove == true)
             {
                 GraphicsDevice.Clear(Color.Black);
                 _spriteBatch.Begin();
 
                 string lose = "YOU LOSE";
-                string score = "Survived " + Score.ToString();
+                string score = "Survived " + Score.ToString(@"mm\:ss");
                 string escape = "Press escape to quit";
 
                 _spriteBatch.DrawString(_font, lose, printMiddle(lose, 100, 1), Color.Red);
@@ -128,20 +172,9 @@ namespace Game_Project_0
 
 
             }
-            else if(gameStart != true)
-            {
-                string title = "Ship Quest";
-                string tostart = "Press Left or right to start";
-                string esxape = "Press escape to quit";
-                _spriteBatch.Begin();
-                _spriteBatch.DrawString(_font, title, printMiddle(title, 300, 3f), Color.Red, 0f, Vector2.Zero, 3, SpriteEffects.None, 0f);
-                _spriteBatch.DrawString(_font, tostart, printMiddle(tostart, 250, 1f), Color.Red);
-                _spriteBatch.DrawString(_font, esxape, printMiddle(esxape, 225, 1f), Color.Red);
-                _spriteBatch.End();
-            }
             else
             {
-
+                GraphicsDevice.Clear(Color.MediumPurple);
                 _spriteBatch.Begin();
             ship.Draw(gameTime, _spriteBatch);
             _spriteBatch.DrawString(_font, $"{gameTime.TotalGameTime:c}", new Vector2(2, 2), Color.Red);
@@ -154,8 +187,9 @@ namespace Game_Project_0
                 s.Draw(gameTime, _spriteBatch);
             }
             _spriteBatch.End();
-                base.Draw(gameTime);
+               
             }
+            base.Draw(gameTime);
 
 
 

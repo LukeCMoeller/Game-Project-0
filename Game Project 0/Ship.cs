@@ -50,12 +50,12 @@ namespace Game_Project_0
             keyboardState = Keyboard.GetState();
             facing = 0;
             // Apply keyboard movement
-            if ((keyboardState.IsKeyDown(Keys.Left) || keyboardState.IsKeyDown(Keys.A)) && position.X > 22) //numbers weird becuase ShipSprite not made evenly
+            if ((keyboardState.IsKeyDown(Keys.Left) || keyboardState.IsKeyDown(Keys.A)) && position.X > 22 && !keyboardState.IsKeyDown(Keys.Right) && !keyboardState.IsKeyDown(Keys.D)) //numbers weird becuase ShipSprite not made evenly
             {
                  facing = 2;
                  position += new Vector2(-4, 0);
             }
-            if ((keyboardState.IsKeyDown(Keys.Right) || keyboardState.IsKeyDown(Keys.D)) && position.X < screenWidth - 26) //numbers weird becuase ShipSprite not made evenly
+            if ((keyboardState.IsKeyDown(Keys.Right) || keyboardState.IsKeyDown(Keys.D)) && position.X < screenWidth - 26 && !keyboardState.IsKeyDown(Keys.Left) && !keyboardState.IsKeyDown(Keys.A)) //numbers weird becuase ShipSprite not made evenly
             {
                 facing = 1;
                 position += new Vector2(4, 0);
